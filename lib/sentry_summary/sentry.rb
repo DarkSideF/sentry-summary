@@ -2,11 +2,13 @@ require "nestful"
 require "chronic"
 
 module SentrySummary
-  class Sentry
-    attr_writer :token, :organization
+  API_URI = 'api/0'.freeze
 
-    def initialize(&block)
-      block.call(self)
+  class Sentry
+    def initialize
+      @token = ENV.fetch('API_TOKEN')
+      @base_url = ENV.fetch('BASE_URL')
+      @organization = ENV.fetch('ORGANIZATION')
     end
 
     def issues(project, since = nil)
@@ -31,24 +33,23 @@ module SentrySummary
     private
 
     def request(method, path, parameters = {})
-      response = Nestful::Request.new("#{base_url}/#{path}",
+      request_url = "#{@base_url}#{API_URI}#{path}"
+
+      response = Nestful::Request.new(
+        request_url,
         method: method,
         auth_type: :bearer,
         password: @token,
         params: parameters
       ).execute
 
-      links = response.headers["Link"].split(",").map do |link|
+      links = response.headers["link"].split(",").map do |link|
         Link.build(link)
       end
 
       next_link = links.find { |link| link.rel == :next && link.results? }
 
       Response.new(JSON.parse(response.body, symbolize_names: true), next_link)
-    end
-
-    def base_url
-      "https://app.getsentry.com/api/0"
     end
 
     def paginate(path, since, &block)
