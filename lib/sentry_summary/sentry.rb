@@ -1,5 +1,5 @@
-require "nestful"
-require "chronic"
+require 'nestful'
+require 'chronic'
 
 module SentrySummary
   API_URI = 'api/0'.freeze
@@ -43,7 +43,7 @@ module SentrySummary
         params: parameters
       ).execute
 
-      links = response.headers["link"].split(",").map do |link|
+      links = response.headers['link'].split(',').map do |link|
         Link.build(link)
       end
 
@@ -53,7 +53,7 @@ module SentrySummary
     end
 
     def paginate(path, since, &block)
-      since ||= "24 hours ago"
+      since ||= '24 hours ago'
       since = Chronic.parse(since)
 
       items = []
@@ -82,7 +82,7 @@ module SentrySummary
     end
 
     def cursor
-      @next_link && @next_link.cursor
+      @next_link&.cursor
     end
 
     def next?
@@ -100,7 +100,7 @@ module SentrySummary
     end
 
     def results?
-      @results == "true"
+      @results == 'true'
     end
 
     def self.build(link)
@@ -114,7 +114,7 @@ module SentrySummary
         parameter.scan(/^([^=]+)="([^"]+)"$/).first
       end.to_h
 
-      Link.new(parameters["rel"], parameters["cursor"], parameters["results"])
+      Link.new(parameters['rel'], parameters['cursor'], parameters['results'])
     end
   end
 
@@ -149,5 +149,4 @@ module SentrySummary
       Event.new(dto[:id], dto[:issue_id], dto[:dateCreated], dto[:context][:Route], dto[:metadata])
     end
   end
-
 end

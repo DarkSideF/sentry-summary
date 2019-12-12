@@ -1,4 +1,4 @@
-require "similar_text"
+require 'similar_text'
 
 module SentrySummary
   class Aggregator
@@ -6,8 +6,8 @@ module SentrySummary
       @client = client
     end
 
-    def events_by_route(since = "24 hours ago")
-      issues = client.issues("api", since)
+    def events_by_route(since = '24 hours ago')
+      issues = client.issues('api', since)
 
       issues.each_with_object({}) do |issue, hash|
         events = client.events(issue.id)
@@ -23,8 +23,8 @@ module SentrySummary
       end
     end
 
-    def events_by_type(since = "24 hours ago")
-      issues = client.issues("api", since)
+    def events_by_type(since = '24 hours ago')
+      issues = client.issues('api', since)
 
       issues.each_with_object({}) do |issue, hash|
         events = client.events(issue.id)
@@ -51,8 +51,6 @@ module SentrySummary
       closest_title
     end
 
-    def client
-      @client
-    end
+    attr_reader :client
   end
 end
