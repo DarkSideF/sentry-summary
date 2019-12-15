@@ -1,3 +1,5 @@
+# Tool for getting a summary of the sentry issues
+
 Before using you need to set ENV variables into `.env` file.
 ```
 API_TOKEN={YOUR_TOKEN}

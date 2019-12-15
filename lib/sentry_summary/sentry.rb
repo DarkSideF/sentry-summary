@@ -1,6 +1,9 @@
 require 'nestful'
 require 'chronic'
 
+require 'sentry_summary/models/base'
+require 'sentry_summary/models/event'
+
 module SentrySummary
   API_URI = 'api/0'.freeze
 
@@ -26,7 +29,7 @@ module SentrySummary
 
     def events(issue, since = nil)
       paginate("/issues/#{issue}/events/", since) do |event|
-        Event.build(event.merge(issue_id: issue))
+        SentrySummary::Models::Event.new(event.merge(issue_id: issue, full: 1))
       end
     end
 
@@ -63,7 +66,7 @@ module SentrySummary
         response = request(:get, path, cursor: cursor)
         new_items = response.body.map(&block)
 
-        items_in_time_range = new_items.select { |item| item.date >= since }
+        items_in_time_range = new_items.select { |item| item.dateCreated >= since }
         items.concat(items_in_time_range)
 
         cursor = response.cursor
@@ -115,38 +118,6 @@ module SentrySummary
       end.to_h
 
       Link.new(parameters['rel'], parameters['cursor'], parameters['results'])
-    end
-  end
-
-  class Issue
-    attr_reader :id, :title, :date, :metadata, :count
-
-    def initialize(id, title, date, metadata, count)
-      @id = id
-      @title = title
-      @date = DateTime.parse(date).to_time
-      @metadata = metadata
-      @count = count
-    end
-
-    def self.build(dto)
-      Issue.new(dto[:id], dto[:title], dto[:lastSeen], dto[:metadata], dto[:count].to_i)
-    end
-  end
-
-  class Event
-    attr_reader :id, :issue_id, :date, :route, :metadata
-
-    def initialize(id, issue_id, date, route, metadata)
-      @id = id
-      @issue_id = issue_id
-      @date = DateTime.parse(date).to_time
-      @route = route
-      @metadata = metadata
-    end
-
-    def self.build(dto)
-      Event.new(dto[:id], dto[:issue_id], dto[:dateCreated], dto[:context][:Route], dto[:metadata])
     end
   end
 end

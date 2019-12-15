@@ -1,5 +1,3 @@
 module SentrySummary
-  module Deal
-    VERSION = '1.3.0'.freeze
-  end
+  VERSION = '1.1.0'.freeze
 end
